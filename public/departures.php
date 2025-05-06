@@ -173,6 +173,4 @@ switch ($input['format']) {
         renderCsv($departures, $input['stopPointRef']);
     case 'html':
         renderHtml($departures, $input['stopPointRef'], $useCache, $cacheTimestamp, $requestTimestamp ?? '', $executionTime);
-    default:
-        renderUnsupportedFormat($input['format']);
 }

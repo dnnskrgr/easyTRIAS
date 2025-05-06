@@ -121,9 +121,3 @@ function renderRawXml(string $response): void {
     echo $response;
     exit;
 }
-
-function renderUnsupportedFormat(string $format): void {
-    header('Content-Type: text/plain', true, 400);
-    echo "Error:\n-Output format '$format' is not supported.\nAllowed: json, xml, csv, html, raw.";
-    exit;
-}
