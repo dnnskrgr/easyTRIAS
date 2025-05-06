@@ -1,6 +1,6 @@
 <?php
 /*
- * This file is part of easyTRIAS (https://github.com/dnnskrgr/easyTRIAS).
+ * This file is part of the easyTRIAS project (https://github.com/dnnskrgr/easytrias-php-proxy).
  *
  * Copyright 2025 Dennis Krüger
  *
