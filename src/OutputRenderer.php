@@ -62,57 +62,53 @@ function renderHtml(array $departures, string $stopPointRef, bool $useCache, str
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timetable</title>
+    <title>Departures</title>
     <style>
         body { font-family: sans-serif; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background-color: #f0f0f0; }
+        td.center { text-align: center; }
     </style>
 </head>
 <body>
-    <h1>Timetable Results</h1>
+    <h1>Departures</h1>
     <p>Stop Point Ref: ' . htmlspecialchars($stopPointRef) . '</p>
     <p>Data Source: ' . ($useCache ? 'Cache (' . $cacheTimestamp . ')' : 'Live (' . $requestTimestamp . ')') . '</p>
-    <p>Duration: ' . number_format($executionTime, 3) . ' Seconds</p>
-    <table>
-        <thead>
-            <tr>
-                <th>Stop Point Name</th>
-                <th>Timetabled Time</th>
-                <th>Estimated Time</th>
-                <th>Local Time</th>
-                <th>Delay in Minutes</th>
-                <th>Minutes until Departure</th>
-                <th>Line Number</th>
-                <th>Destination</th>
-                <th>Route Description</th>
-                <th>Transport Translated</th>
-                <th>Transport Icon</th>
-                <th>Transport Color</th>
-            </tr>
-        </thead>
-        <tbody>';
-    foreach ($departures as $departure) {
-        echo '<tr>
-            <td>' . htmlspecialchars($departure['stopPointName']) . '</td>
-            <td>' . htmlspecialchars($departure['timetabledTime']) . '</td>
-            <td>' . htmlspecialchars($departure['estimatedTime']) . '</td>
-            <td>' . htmlspecialchars($departure['localTime']) . '</td>
-            <td>' . htmlspecialchars($departure['delay']) . '</td>
-            <td>' . htmlspecialchars($departure['minutesUntilDeparture']) . '</td>
-            <td>' . htmlspecialchars($departure['lineNumber']) . '</td>
-            <td>' . htmlspecialchars($departure['destination']) . '</td>
-            <td>' . htmlspecialchars($departure['routeDescription']) . '</td>
-            <td>' . htmlspecialchars($departure['transportTranslated']) . '</td>
-            <td><center><img src="' . htmlspecialchars($departure['transportIcon']) . '" height=32 width=32/></center></td>
-            <td style="color: #ffffff" bgcolor="' . htmlspecialchars($departure['transportColor']) . '"><center>' . htmlspecialchars($departure['transportColor']) . '</center></td>
-        </tr>';
+    <p>Duration: ' . number_format($executionTime, 3) . ' Seconds</p>';
+
+    if (empty($departures)) {
+        echo '<p><em>No departures found.</em></p>';
+    } else {
+        echo '<table>
+            <thead>
+                <tr>';
+        foreach (array_keys($departures[0]) as $key) {
+            echo '<th>' . htmlspecialchars($key) . '</th>';
+        }
+        echo '</tr>
+            </thead>
+            <tbody>';
+
+        foreach ($departures as $departure) {
+            echo '<tr>';
+            foreach ($departure as $key => $value) {
+                if ($key === 'transportIcon') {
+                    echo '<td class="center"><img src="' . htmlspecialchars($value) . '" width="32" height="32" alt="icon" /></td>';
+                } elseif ($key === 'transportColor') {
+                    echo '<td class="center" style="color: #fff; background-color: ' . htmlspecialchars($value) . '">' . htmlspecialchars($value) . '</td>';
+                } else {
+                    echo '<td>' . htmlspecialchars($value) . '</td>';
+                }
+            }
+            echo '</tr>';
+        }
+
+        echo '</tbody>
+        </table>';
     }
-    echo '</tbody>
-    </table>
-</body>
-</html>';
+
+    echo '</body></html>';
     exit;
 }
 

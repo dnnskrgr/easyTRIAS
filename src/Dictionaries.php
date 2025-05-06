@@ -22,7 +22,7 @@ return [
         ', Bahnhof' => '',
         ' Bahnhof' => '',
         ', Hauptbahnhof' => ' Hbf',
-        'Hannover/' => 'Hannover '
+        'Hannover/' => 'Hannover ',
     ],
 
     'transportLabels' => [

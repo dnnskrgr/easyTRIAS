@@ -80,10 +80,10 @@ $departures = [];
 if ($stopEvents) {
     foreach ($stopEvents as $event) {
         // === Basic information about the stop ===
-        $stopPointName  = $event->xpath('.//trias:StopPointName/trias:Text')[0] ?? 'N/A';
+        $stopName       = $event->xpath('.//trias:StopPointName/trias:Text')[0] ?? 'N/A';
         $lineRaw        = $event->xpath('.//trias:PublishedLineName/trias:Text')[0] ?? 'N/A';
         $destinationRaw = $event->xpath('.//trias:DestinationText/trias:Text')[0] ?? 'N/A';
-        $routeDesc      = $event->xpath('.//trias:RouteDescription/trias:Text')[0] ?? 'N/A';
+        $route          = $event->xpath('.//trias:RouteDescription/trias:Text')[0] ?? 'N/A';
 
         // === Time information (planned time vs. real time) ===
         $timetableTime  = $event->xpath('.//trias:TimetabledTime')[0] ?? 'N/A';
@@ -91,7 +91,7 @@ if ($stopEvents) {
 
         // Calculate local time (with time zone)
         $effectiveTime  = $estimatedTime ?? $timetableTime;
-        $departureDate = new DateTime($effectiveTime);
+        $departureDate  = new DateTime($effectiveTime);
         $departureDate->setTimezone(new DateTimeZone('Europe/Berlin'));
 
         // Calculate delay in seconds (only if real-time information is available)
@@ -100,16 +100,16 @@ if ($stopEvents) {
             : 0;
 
         // Minutes until departure (from current time)
-        $minutesUntil   = calculateMinutesDifference($departureDate->format('c'));
+        $countdownInMin = calculateMinutesDifference($departureDate->format('c'));
 
         // Skip if departure is in the past or walking is no longer sufficient
-        if ($minutesUntil <= $input['walkingMinutes']) {
+        if ($countdownInMin <= $input['walkingMinutes']) {
             continue;
         }
 
         // === Determine transport type (e.g. bus, S-Bahn, long-distance train ...) ===
-        $transport   = $event->xpath('.//trias:Mode/trias:PtMode')[0] ?? 'N/A';         // Main Transport Type
-        $railSubmode = $event->xpath('.//trias:Mode/trias:RailSubmode')[0] ?? null;     // Sub Transport Type
+        $transport      = $event->xpath('.//trias:Mode/trias:PtMode')[0] ?? 'N/A';         // Main Transport Type
+        $railSubmode    = $event->xpath('.//trias:Mode/trias:RailSubmode')[0] ?? null;     // Sub Transport Type
 
         // Clarification of train types (S-Bahn / long-distance train instead of just "rail"; everything else is regional train)
         if ($transport == 'rail' && $railSubmode == 'suburbanRailway') {
@@ -121,29 +121,29 @@ if ($stopEvents) {
         // === Prepare data ===
 
         // Sanitize line number (e.g. “ICE 123 Hannover” → “ICE 123”)
-        $lineNumber = preg_replace('/\s+[A-Za-zÄÖÜäöüß].*$/u', '', (string)$lineRaw);
+        $line = preg_replace('/\s+[A-Za-zÄÖÜäöüß].*$/u', '', (string)$lineRaw);
 
         // Sanitize destination if necessary (e.g. “Hannover/XYZ” → “Hannover XYZ”)
         $destination         = applyReplacements((string)$destinationRaw, $dictionaries['destinationReplacements']);
 
         // Translate transport types, load icon and color information
-        $transportTranslated = translateTransport($transport, $dictionaries['transportLabels']);
-        $iconFile            = translateTransport($transport, $dictionaries['transportIcons']);
-        $transportIcon       = $config['iconUrl'] . $iconFile;
-        $transportColor      = translateTransport($transport, $dictionaries['transportColors']);
+        $transportLabel = translateTransport($transport, $dictionaries['transportLabels']);
+        $iconFile       = translateTransport($transport, $dictionaries['transportIcons']);
+        $transportIcon  = $config['iconUrl'] . $iconFile;
+        $transportColor = translateTransport($transport, $dictionaries['transportColors']);
 
         // === Add record to array ===
         $departures[] = [
-            'stopPointName'         => (string)$stopPointName,
+            'stopName'              => applyReplacements($stopName, $dictionaries['destinationReplacements']),
             'timetabledTime'        => (string)$timetableTime,
             'estimatedTime'         => $estimatedTime ? (string)$estimatedTime : 'N/A',
-            'localTime'             => $departureDate->format('H:i'),
+            'displayTime'           => $departureDate->format('H:i'),
             'delay'                 => (int)round($delayInSec / 60),
-            'minutesUntilDeparture' => $minutesUntil,
-            'lineNumber'            => (string)$lineNumber,
+            'countdown'             => $countdownInMin,
+            'line'                  => (string)$line,
             'destination'           => (string)$destination,
-            'routeDescription'      => (string)$routeDesc,
-            'transportTranslated'   => $transportTranslated,
+            'route'                 => (string)$route,
+            'transportLabel'        => $transportLabel,
             'transportIcon'         => $transportIcon,
             'transportColor'        => $transportColor
         ];
