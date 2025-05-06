@@ -62,10 +62,6 @@ if ($input['format'] === 'raw') {
 
 $xml = parseXml($response);
 
-$namespaces = $xml->getNamespaces(true);
-$defaultNs = $namespaces[''] ?? 'http://www.vdv.de/trias';
-$xml->registerXPathNamespace('trias', $defaultNs);
-
 if (!$xml) {
     header('Content-Type: text/plain', true, 502);
     echo "Error:\n-Failed to parse XML response from TRIAS." . "\n\nData Source: " . ($useCache == true ? 'Cache' : 'Live');
